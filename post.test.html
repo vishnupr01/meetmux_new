@@ -92,7 +92,8 @@
     const socket = io('https://test.meetmux.com', {
       auth: {
         token,
-      }
+      },
+      transports: ['websocket']
     });
 
     socket.on('connect', () => {
