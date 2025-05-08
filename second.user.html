@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Real-Time Like & Comment Updates</title>
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .user-details {
+      margin-bottom: 20px;
+    }
+    .user-details h3 {
+      font-size: 1.5em;
+    }
+    .user-details p {
+      font-size: 1em;
+      color: #555;
+    }
+    .post {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .like-btn, .comment-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      margin-top: 5px;
+    }
+    .notification {
+      background-color: #28a745;
+      color: white;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      display: none;
+    }
+    .comment-section {
+      margin-top: 15px;
+    }
+    .comment {
+      padding: 5px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="user-details">
+    <h3 id="user-name"></h3>
+    <p id="user-email"></p>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
+  <div class="post" id="post-1">
+    <h3>Post Title</h3>
+    <p>This is a sample post content.</p>
+
+    <button class="like-btn" id="like-btn-1" onclick="likePost(postId)">Like</button>
+    <p>Likes: <span id="like-count-1">0</span></p>
+
+    <div class="comment-section">
+      <input type="text" id="comment-input" placeholder="Write a comment..." />
+      <button class="comment-btn" onclick="addComment(postId)">Add Comment</button>
+
+      <div id="comments-list"></div>
+    </div>
+    <div class="comment-reply-section">
+      <input type="text" id="comment-repy-input" placeholder="Write a comment..." />
+      <button class="comment-reply-btn" onclick="addReplyComment(parentCommentId)">Add Comment</button>
+      <button class="comment-reply-btn" onclick="commentLike(postId, parentCommentId)">Like Comment</button>
+
+
+      <div id="comments-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const postId = '2fd86ca3-31e0-4cd8-b236-28d6b72d6334';
+    const parentCommentId="1746639076963_rll7"
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJaTUEwN1daREZGNTFDIiwibW9iaWxlTnVtYmVyIjoiKzkxOTY1NjM5OTIzMCIsImlhdCI6MTc0NjAyMDk2OSwiZXhwIjoxNzU2Mzg4OTY5fQ.Gk8Wlk0lgNvYi-DtjT2CDs2g9dj6DAYhiNBr6kyy7I4'; // Replace with your actual JWT
+
+    const socket = io('https://test.meetmux.com', {
+      auth: {
+        token,
+      },
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Connected to server');
+      socket.emit('join_post_room', postId);
+    });
+
+    socket.on('user_details', (data) => {
+      document.getElementById('user-name').textContent = data.name;
+      document.getElementById('user-email').textContent = data.email;
+    });
+
+    socket.on('like_update', (data) => {
+      if (data.postId === postId) {
+        document.getElementById('like-count-1').textContent = data.newLikeCount;
+        showNotification(data.message);
+      }
+    });
+
+    socket.on('comment_update', (data) => {
+      if (data.postId === postId) {
+        showNotification(`New comment: ${data.comment.text}`);
+        appendComment(data.comment);
+      }
+    });
+    
+    socket.on('reply_update', (data) => {
+      console.log(data);
+      
+      if (data.postId === postId) {
+        showNotification(`New comment: ${data.reply}`);
+        appendComment(data.content);
+      }
+    });
+        
+    socket.on('comment_like_update', (data) => {
+      console.log(data);
+      
+      if (data.postId === postId) {
+        appendComment(data.totalLikes);
+      }
+    });
+
+    function likePost(postId) {
+      fetch(`https://test.meetmux.com/api/v1/like/${postId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Like API response:', data.message);
+      })
+      .catch(error => {
+        console.error('Error liking post:', error);
+      });
+    }
+    function commentLike(postId,commentId) {
+      fetch(`https://test.meetmux.com/api/v1/likeComment/${postId}/${commentId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Like API response:', data.message);
+      })
+      .catch(error => {
+        console.error('Error liking post:', error);
+      });
+    }
+
+    function addComment(postId) {
+      const commentInput = document.getElementById('comment-input');
+      const comment = commentInput.value.trim();
+
+      if (!comment) return alert('Please enter a comment');
+
+      fetch(`https://test.meetmux.com/api/v1/comment/${postId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        commentInput.value = '';
+        console.log('Comment added:', data.comment);
+        showNotification('Comment added successfully');
+      })
+      .catch(error => {
+        console.error('Error adding comment:', error);
+      });
+    }
+
+
+    function addReplyComment(commentId) {
+      const commentInput = document.getElementById('comment-repy-input');
+      const content = commentInput.value.trim();
+
+      if (!content) return alert('Please enter a comment');
+
+      fetch(`https://test.meetmux.com/api/v1/commentReply/${postId}/${commentId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        commentInput.value = '';
+        console.log(data);
+        
+        console.log('Comment added:', data.comment);
+        showNotification('Comment added successfully');
+      })
+      .catch(error => {
+        console.error('Error adding comment:', error);
+      });
+    }
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
+    function appendComment(comment) {
+      const commentList = document.getElementById('comments-list');
+      const div = document.createElement('div');
+      div.className = 'comment';
+      console.log(comment)
+      div.textContent = comment.text;
+      commentList.prepend(div);
+    }
+  </script>
+
+</body>
+</html>
