@@ -89,11 +89,10 @@
     const parentCommentId="1746639076963_rll7"
     const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJaTVpIRzJBQjc5REM2IiwibW9iaWxlTnVtYmVyIjoiKzkxOTkxNTQ5MzgyNyIsImlhdCI6MTc0NjY4NTU5MSwiZXhwIjoxNzU3MDUzNTkxfQ.YkCH-PInErqLGcRm9fJJSxDyr-Ee8QjwoWXnnDAR9WU'; // Replace with your actual JWT
 
-    const socket = io('https://test.meetmux.com', {
-      auth: {
-        token
-      }
-    });
+const socket = io('https://test.meetmux.com', {
+  transports: ['websocket'], // Avoid polling
+  withCredentials: true
+});
 
     socket.on('connect', () => {
       console.log('✅ Connected to server');
