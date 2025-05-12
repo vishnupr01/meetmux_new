@@ -114,10 +114,10 @@
   const postDiv = document.createElement('div');
   postDiv.className = 'post';
 
-  const imageUrl = Array.isArray(post.imageUrls) && post.imageUrls.length > 0
+  const imageUrl = Array.isArray(post.media_files) && post.media_files.length > 0
     ? post.media_files.url
     : null;
-
+console.log(media_files)
   postDiv.innerHTML = `
     <strong>Post ID:</strong> ${post.post_id}<br>
     <strong>Caption:</strong> ${post.caption || 'N/A'}<br>
