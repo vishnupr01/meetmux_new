@@ -117,7 +117,7 @@
   const imageUrl = Array.isArray(post.dataValues
 .media_files) && post.dataValues
 .media_files.length > 0
-    ? post.media_files.url
+    ? post.media_files[0].url
     : null;
   postDiv.innerHTML = `
     <strong>Post ID:</strong> ${post.post_id}<br>
