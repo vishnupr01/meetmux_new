@@ -114,10 +114,11 @@
   const postDiv = document.createElement('div');
   postDiv.className = 'post';
 
-  const imageUrl = Array.isArray(post.media_files) && post.media_files.length > 0
+  const imageUrl = Array.isArray(post.dataValues
+.media_files) && post.dataValues
+.media_files.length > 0
     ? post.media_files.url
     : null;
-console.log(media_files)
   postDiv.innerHTML = `
     <strong>Post ID:</strong> ${post.post_id}<br>
     <strong>Caption:</strong> ${post.caption || 'N/A'}<br>
@@ -152,7 +153,8 @@ console.log(media_files)
       });
       
       socket.on('new_post', (post) => {
-        addLog(`New post received: ${post.post_id}`);
+        addLog(`New post received: ${post.dataValues
+.post_id}`);
         console.log('New post data:', post);
         displayPost(post);
       });
