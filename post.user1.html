@@ -115,7 +115,7 @@
   postDiv.className = 'post';
 
   const imageUrl = Array.isArray(post.imageUrls) && post.imageUrls.length > 0
-    ? post.imageUrls[0]
+    ? post.media_files.url
     : null;
 
   postDiv.innerHTML = `
