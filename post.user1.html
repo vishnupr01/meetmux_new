@@ -117,14 +117,14 @@
   const imageUrl = Array.isArray(post.dataValues
 .media_files) && post.dataValues
 .media_files.length > 0
-    ? post.media_files[0].url
+    ? post.dataValues.media_files[0].url
     : null;
   postDiv.innerHTML = `
-    <strong>Post ID:</strong> ${post.post_id}<br>
-    <strong>Caption:</strong> ${post.caption || 'N/A'}<br>
-    <strong>Type:</strong> ${post.post_type || 'N/A'}<br>
-    <strong>User:</strong> ${post.user?.username || 'Unknown'}<br>
-    <strong>Created:</strong> ${new Date(post.created_at).toLocaleString()}<br>
+    <strong>Post ID:</strong> ${post.dataValues.post_id}<br>
+    <strong>Caption:</strong> ${post.dataValues.caption || 'N/A'}<br>
+    <strong>Type:</strong> ${post.dataValues.post_type || 'N/A'}<br>
+    <strong>User:</strong> ${post.dataValues.user?.username || 'Unknown'}<br>
+    <strong>Created:</strong> ${new Date(post.dataValues.created_at).toLocaleString()}<br>
     ${imageUrl ? `<img src="${imageUrl}" alt="Post Image" style="max-width: 100%; margin-top: 10px; border-radius: 4px;">` : ''}
   `;
 
